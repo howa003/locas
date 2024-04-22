@@ -1,0 +1,341 @@
+<html>
+<head>
+    <title>
+        LocaS — Loss-of-coolant-accident Stresses
+    </title>
+    <link rel="icon" type="image/png" href="http://jakubholan.cz/static/images/favicon.png">
+    <script type="text/javascript" src="code.js"></script>
+    <script type="text/javascript" src="/eel.js"></script>
+    <script type="text/javascript">
+            function js_log_post(string_value){
+                document.getElementById('id_div_log').innerHTML += string_value+'<br>';
+            }
+
+            function js_print_result(string_value){
+                document.getElementById("id_stav_vypoctu").value = string_value
+            }
+
+            function run_python(){
+                js_print_result('Progress: Passing data to python script.')
+
+                let gui_inputs = {
+                    Tstavba: parseFloat(document.getElementById("id_Tstavba").value),
+                    Ti0: parseFloat(document.getElementById("id_Ti0").value),
+                    Te: parseFloat(document.getElementById("id_Te").value),
+                    duration: parseInt(document.getElementById("id_duration").value),
+                    concrThick: parseFloat(document.getElementById("id_concrThick").value),
+                    steelThick: parseFloat(document.getElementById("id_steelThick").value),
+                    polomerVnitrni: parseFloat(document.getElementById("id_polomerVnitrni").value),
+                    sigmaP0: parseFloat(document.getElementById("id_sigmaP0").value),
+                    plochaPredp: parseFloat(document.getElementById("id_plochaPredp").value),
+                    density0: parseFloat(document.getElementById("id_density0").value),
+                    waterCont: parseFloat(document.getElementById("id_waterCont").value),
+                    thermExpan: parseFloat(document.getElementById("id_thermExpan").value),
+                    modulusConc: parseFloat(document.getElementById("id_modulusConc").value),
+                    modulusSteel: parseFloat(document.getElementById("id_modulusSteel").value),
+                    emiss: parseFloat(document.getElementById("id_emiss").value),
+                    Lair: parseFloat(document.getElementById("id_Lair").value),
+                    pe: parseFloat(document.getElementById("id_pe").value),
+                    Le: parseFloat(document.getElementById("id_Le").value),
+                    dt1: parseFloat(document.getElementById("id_dt1").value),
+                    dt2: parseFloat(document.getElementById("id_dt2").value),
+                    dt3: parseFloat(document.getElementById("id_dt3").value),
+                    dt4: parseFloat(document.getElementById("id_dt4").value),
+                    dt5: parseFloat(document.getElementById("id_dt5").value),
+                    poisson: parseFloat(document.getElementById("id_poisson").value)
+                };
+
+                eel.get_python_result(gui_inputs)(js_print_result)
+            }
+
+            eel.expose(print_status);
+            function print_status(string_value) {
+                document.getElementById("id_stav_vypoctu").value = string_value
+                js_log_post(string_value)
+            }
+
+    </script>
+    <link rel="stylesheet" href="bootstrap.min.css">
+</head>
+<body>
+<div class="zahlavi">
+    <div style="display: inline-block;"><span style="font-weight: bolder">LOCAS</span> — <i>Loss-of-coolant-accident Stresses</i></div>
+    <div style="display: inline-block; float: right; font-size: 12px;">version 2.5 (31th Mar 2024)</div>
+</div>
+</div>
+<div class="container">
+    <div style="height: auto; padding:15px 15px; font-size:15px; line-height:25px; border-radius:10px; text-align:left; background:#EBEBEB">
+        <div style="width: 100%; overflow: hidden;">
+            <form class="form-horizontal" id="id-drevo-inputs" method="post">
+                <input type="hidden" name="csrfmiddlewaretoken"
+                       value="DOex7JoMDMIyUUg5BKQUoXgw2xNPVZfKQeX2TFX8foxxRizbLZkykuicHiyrcbxC">
+                <div>
+                    <div class="form-row">
+                        <div class="col-6">
+                            <div id="div_id_Tstavba" class="form-group row">
+                                <label for="id_Tstavba" class="col-lg-9 requiredField">
+                                    Initial temperature (before operation start) [°C]:</label>
+                                <div class="col-lg-3"><input type="number" name="Tstavba" step="any"
+                                                             class="numberinput form-control" required=""
+                                                             id="id_Tstavba" value="20">
+                                </div>
+                            </div>
+                            <div id="div_id_Ti0" class="form-group row">
+                                <label for="id_Ti0" class="col-lg-9 requiredField">
+                                    Internal temperature before LOCA [°C]:</label>
+                                <div class="col-lg-3"><input type="number" name="Ti0" step="any"
+                                                             class="numberinput form-control" required="" id="id_Ti0" value="41">
+                                </div>
+                            </div>
+                            <div id="div_id_Te" class="form-group row">
+                                <label for="id_Te" class="col-lg-9 requiredField">
+                                    External temperature before LOCA [°C]:</label>
+                                <div class="col-lg-3"><input type="number" name="Te" step="any"
+                                                             class="numberinput form-control" required="" id="id_Te" value="20">
+                                </div>
+                            </div>
+                            <div id="div_id_duration" class="form-group row">
+                                <label for="id_duration" class="col-lg-9 requiredField">
+                                    Duration of LOCA [s]:</label>
+                                <div class="col-lg-3"><input type="number" name="duration" step="any"
+                                                             class="numberinput form-control" required=""
+                                                             id="id_duration" value="604800">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="id_souciniteltlaku" class="col-lg-9 requiredField">
+                                    Pressure multiplier [-]:</label>
+                                <div class="col-lg-3"><input type="number" name="souciniteltlaku" step="any"
+                                                             class="numberinput form-control" required=""
+                                                             id="id_souciniteltlaku" value="1.5">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-1">
+                        </div>
+                        <div class="col-5">
+                            <div id="div_id_concrThick" class="form-group row">
+                                <label for="id_concrThick" class="col-lg-9 requiredField">
+                                    Concrete thickness [m]:</label>
+                                <div class="col-lg-3"><input type="number" name="concrThick" step="any"
+                                                             class="numberinput form-control" required=""
+                                                             id="id_concrThick" value="1.5">
+                                </div>
+                            </div>
+                            <div id="div_id_steelThick" class="form-group row">
+                                <label for="id_steelThick" class="col-lg-9 requiredField">
+                                    Inner steel liner thickness [m]:</label>
+                                <div class="col-lg-3"><input type="number" name="steelThick" step="any"
+                                                             class="numberinput form-control" required=""
+                                                             id="id_steelThick" value="0.008">
+                                </div>
+                            </div>
+                            <div id="div_id_polomerVnitrni" class="form-group row">
+                                <label for="id_polomerVnitrni" class="col-lg-9 requiredField">
+                                    Inner radius of cylinder [m]:</label>
+                                <div class="col-lg-3"><input type="number" name="polomerVnitrni" step="any"
+                                                             class="numberinput form-control" required=""
+                                                             id="id_polomerVnitrni" value="9.5">
+                                </div>
+                            </div>
+                            <div id="div_id_sigmaP0" class="form-group row">
+                                <label for="id_sigmaP0" class="col-lg-9 requiredField">
+                                    Stress in tendons [MPa]:</label>
+                                <div class="col-lg-3"><input type="number" name="sigmaP0" step="any"
+                                                             class="numberinput form-control" required=""
+                                                             id="id_sigmaP0" value="1280">
+                                </div>
+                            </div>
+                            <div id="div_id_plochaPredp" class="form-group row">
+                                <label for="id_plochaPredp" class="col-lg-9 requiredField">
+                                    Cross-sect. area of tendons per meter height of wall [m2]:</label>
+                                <div class="col-lg-3"><input type="number" name="plochaPredp" step="any"
+                                                             class="numberinput form-control" required=""
+                                                             id="id_plochaPredp" value="0.01425">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="prazdny20"></div>
+
+                <div>
+                    <div class="form-row">
+                        <div class="col-6">
+                            <div id="div_id_density0" class="form-group row">
+                                <label for="id_density0" class="col-lg-9 requiredField">
+                                    Density of concrete [kg/m3]:</label>
+                                <div class="col-lg-3"><input type="number" name="density0" step="any"
+                                                             class="numberinput form-control" required=""
+                                                             id="id_density0" value="2500">
+                                </div>
+                            </div>
+                            <div id="div_id_waterCont" class="form-group row">
+                                <label for="id_waterCont" class="col-lg-9 requiredField">
+                                    Water content in concrete [weight %]:</label>
+                                <div class="col-lg-3"><input type="number" name="waterCont" step="any"
+                                                             class="numberinput form-control" required=""
+                                                             id="id_waterCont" value="1.5">
+                                </div>
+                            </div>
+                            <div id="div_id_thermExpan" class="form-group row">
+                                <label for="id_thermExpan" class="col-lg-9 requiredField">
+                                    Thermal expansion coefficient of concrete and steel [1/K]:</label>
+                                <div class="col-lg-3"><input type="number" name="thermExpan" step="any"
+                                                             class="numberinput form-control" required=""
+                                                             id="id_thermExpan" value="0.000012">
+                                </div>
+                            </div>
+                            <div id="div_id_modulusConc" class="form-group row">
+                                <label for="id_modulusConc" class="col-lg-9 requiredField">
+                                    Concrete modulus of elasticity [MPa]:</label>
+                                <div class="col-lg-3"><input type="number" name="modulusConc" step="any"
+                                                             class="numberinput form-control" required=""
+                                                             id="id_modulusConc" value="35000">
+                                </div>
+                            </div>
+                            <div id="div_id_modulusSteel" class="form-group row">
+                                <label for="id_modulusSteel" class="col-lg-9 requiredField">
+                                    Steel modulus of elasticity [MPa]:</label>
+                                <div class="col-lg-3"><input type="number" name="modulusSteel" step="any"
+                                                             class="numberinput form-control" required=""
+                                                             id="id_modulusSteel" value="210000">
+                                </div>
+                            </div>
+                            <div id="div_id_poisson" class="form-group row">
+                                <label for="id_poisson" class="col-lg-9 requiredField">
+                                    Poisson's ratio: </label>
+                                <div class="col-lg-3"><input type="number" name="poisson" step="any"
+                                                             class="numberinput form-control" required="" id="id_poisson" value="0.2">
+                                </div>
+                            </div>
+                            <div id="div_id_emiss" class="form-group row">
+                                <label for="id_emiss" class="col-lg-9 requiredField">
+                                    Emissivity of concrete and steel: </label>
+                                <div class="col-lg-3"><input type="number" name="emiss" step="any"
+                                                             class="numberinput form-control" required="" id="id_emiss" value="0.7">
+                                </div>
+                            </div>
+                            <div id="div_id_Lair" class="form-group row">
+                                <label for="id_Lair" class="col-lg-9 requiredField">
+                                    Characteristic length of heat transfer [m]:</label>
+                                <div class="col-lg-3"><input type="number" name="Lair" step="any"
+                                                             class="numberinput form-control" required="" id="id_Lair" value="0.05">
+                                </div>
+                            </div>
+                            <div id="div_id_pe" class="form-group row">
+                                <label for="id_pe" class="col-lg-9 requiredField">
+                                    External air pressure [MPa]:</label>
+                                <div class="col-lg-3"><input type="number" name="pe" step="any"
+                                                             class="numberinput form-control" required="" id="id_pe" value="0.1">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-1">
+                        </div>
+                        <div class="col-5">
+                            <div id="div_id_Le" class="form-group row">
+                                <label for="id_Le" class="col-lg-9 requiredField">
+                                    Length of FEM elements [m]:</label>
+                                <div class="col-lg-3"><input type="number" name="Le" step="any"
+                                                             class="numberinput form-control" required="" id="id_Le" value="0.001">
+                                </div>
+                            </div>
+                            <div id="div_id_dt1" class="form-group row">
+                                <label for="id_dt1" class="col-lg-9 requiredField">
+                                    Time steps in t<5min [s]:</label>
+                                <div class="col-lg-3"><input type="number" name="dt1" step="any"
+                                                             class="numberinput form-control" required="" id="id_dt1" value="1">
+                                </div>
+                            </div>
+                            <div id="div_id_dt2" class="form-group row">
+                                <label for="id_dt2" class="col-lg-9 requiredField">
+                                    Time steps in t<30min [s]:</label>
+                                <div class="col-lg-3"><input type="number" name="dt2" step="any"
+                                                             class="numberinput form-control" required="" id="id_dt2" value="15">
+                                </div>
+                            </div>
+                            <div id="div_id_dt3" class="form-group row">
+                                <label for="id_dt3" class="col-lg-9 requiredField">
+                                    Time steps in t<60min [s]:</label>
+                                <div class="col-lg-3"><input type="number" name="dt3" step="any"
+                                                             class="numberinput form-control" required="" id="id_dt3" value="60">
+                                </div>
+                            </div>
+                            <div id="div_id_dt4" class="form-group row">
+                                <label for="id_dt4" class="col-lg-9 requiredField">
+                                    Time steps in t<24h [s]:</label>
+                                <div class="col-lg-3"><input type="number" name="dt4" step="any"
+                                                             class="numberinput form-control" required="" id="id_dt4" value="300">
+                                </div>
+                            </div>
+                            <div id="div_id_dt5" class="form-group row">
+                                <label for="id_dt5" class="col-lg-9 requiredField">
+                                    Time steps in t>24h [s]:</label>
+                                <div class="col-lg-3"><input type="number" name="dt5" step="any"
+                                                             class="numberinput form-control" required="" id="id_dt5" value="1800">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="prazdny20"></div>
+
+                <div class="form-row">
+                    <div class="col-4"></div>
+                    <div class="col-4">
+                        <input type="button" value="Calculate" class="btn btn-primary btn-block" id="add" onclick="run_python()">
+                    </div>
+                    <div class="col-4"></div>
+                </div>
+
+                <div class="prazdny5"></div>
+
+                <div class="form-row">
+                    <div class="col-4"></div>
+                    <div class="col-4">
+                        <input type="text" name="stav_vypoctu" class="form-control" id="id_stav_vypoctu" value="Click on the button above.">
+                    </div>
+                    <div class="col-4"></div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+    <br>
+    This tool can be used for a simple estimation of horizontal (hoop) stresses in a concrete cylinder wall with an inner steel liner.
+    Based on the inputs provided in the table above and in the "temperature.xlsx" and "pressure.xlsx" files, temperatures and stresses in the cylinder wall are determined.
+    Results from the calculations are stored in the "savedData" folder and presented in figures in the "figs" and "gif" folders.
+    The cylinder wall can be loaded by four loads:
+    <ul>
+        <li>operational temperatures described by internal and external temperatures,</li>
+        <li>LOCA temperatures described by an evolution of internal temperature given in the temperature.xlsx file,</li>
+        <li>LOCA pressure described by an evolution of internal pressure given in the pressure.xlsx file,</li>
+        <li>prestressing of concrete induced by steel tendons.</li>
+    </ul>
+    This tool and methods used in this tool are described in detail in a PhD thesis by Holan [1].
+    <br>
+    <br>
+    <i>[1] J. Holan. <a href="https://people.fsv.cvut.cz/www/holanjak/publikace/">Analysis of a prestressed-concrete containment vessel exposed to high pressure and temperature</a>. PhD thesis, CTU in Prague, 2024.</i>
+    <br>
+    <br>
+    <b style='color:red;'>
+        This tool should only be used for PRELIMINARY ESTIMATION of temperatures and stresses,
+        and the results provided by the tool should only be used for preliminary conclusions or as a guidance for more complex modelling.
+    </b>
+    When performing a detailed designing of a concrete cylinder structure, complex three-dimensional modelling should be employed.
+    <br>
+    <br>
+    Author: Jakub Holan, CTU in Prague.
+    <br>
+    <br>
+    Calculation log:
+    <div id="id_div_log" class="my_consolas">
+
+    </div>
+
+</div>
+</body>
+</html>
