@@ -1,6 +1,7 @@
 # Custom
 *.pyc
-original_code.py
+src/original_code/
+original_code/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
