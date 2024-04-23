@@ -1,12 +1,13 @@
 # Custom
 *.pyc
 src/original_code/
-original_code/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *$py.class
+**/
 
 # C extensions
 *.so
