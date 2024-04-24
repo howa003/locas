@@ -58,7 +58,7 @@ def calc_steady_state_heat_transfer(structure: Structure, mesh_space: MeshSpace,
     element_length = mesh_space.element_length
     temperature_distribution = np.zeros(node_count)
     for i in nodes_range:
-        if steel_thick_in != 0 and i < slice_index_steel_in:
+        if steel_thick_in != 0 and i <= slice_index_steel_in:
             temperature_distribution[i] = temp_surf_int_new - (i * element_length / steel_thick_in) * (temp_surf_int_new - temp_concrete_int)
         elif steel_thick_out != 0 and i >= slice_index_steel_out:
             temperature_distribution[i] = temp_concrete_ext - ((i * element_length - steel_thick_in - concrete_thick) / steel_thick_out) * (temp_concrete_ext - temp_surf_ext_new)

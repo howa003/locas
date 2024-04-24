@@ -4,6 +4,7 @@ import eel
 from general_functions import get_timestamp
 from src.calculations.temperatures.surface_heat_transfer_coefficient import calc_surface_resistance
 import numpy as np
+from src.calculations.temperatures.transient_heat_transfer import transient_heat_transfer
 
 # Define the function that will be called from the GUI
 def run_analysis(gui_inputs):
@@ -27,6 +28,8 @@ def run_analysis(gui_inputs):
         # Calculate the distribution of operating temperatures in the wall
         results.temp_oper = calc_operating_temperatures(structure, mesh_space)
 
+        print(results.temp_oper)
+
         # Fill results from time_step = 0 (i.e., operating temperatures)
         results.temp_air_int_vect[0] = loads.temp_air_int_0
         results.pres_air_int_vect[0] = loads.get_current_air_pres(0)
@@ -37,8 +40,7 @@ def run_analysis(gui_inputs):
         print(results.temp_matrix[0])
         print(results.temp_matrix[1])
 
-
-
+        print(transient_heat_transfer(structure, mesh_space, mesh_time, loads, results))
 
         return 0
     except FileNotFoundError as exception:

@@ -43,6 +43,14 @@ class Structure:
         self.step_time_5: float = float(gui_inputs.get('step_time_5'))
 
     @property
+    def has_inner_steel(self) -> bool:
+        return self.steel_thick_in > 0
+
+    @property
+    def has_outer_steel(self) -> bool:
+        return self.steel_thick_out > 0
+
+    @property
     def length(self) -> float:
         return self.steel_thick_in + self.concrete_thick
 
@@ -144,7 +152,7 @@ class MeshSpace:
 
     @property
     def slice_index_steel_in(self) -> int:
-        return int((self.steel_thick / self.element_length) + 1)
+        return int(self.steel_thick / self.element_length)
 
     @property
     def slice_index_steel_out(self) -> int:
@@ -194,6 +202,9 @@ class MeshTime:
     def time_steps_count(self) -> int:
         return int(len(self.time_axis))
 
+    @property
+    def time_steps_range(self) -> range:
+        return range(int(self.time_steps_count))
 
 
 
