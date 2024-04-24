@@ -18,3 +18,7 @@ CONCRETE_CONDUCTIVITY_LIMIT = 1  # Which equation for concrete conductivity shou
 
 AIR_FLOW = 1  # What type of air flow should be used? 0 only laminar; 1 laminar and turbulent
 
+SOURCE_DATA_FOLDER_PATH = 'source_data/'  # Path to the folder with the source data
+
+TEMP_EVOL_FILE: str = 'temperature_evolution.xlsx'  # Name of the file with the temperature evolution data
+PRES_EVOL_FILE: str = 'pressure_evolution.xlsx'  # Name of the file with the pressure evolution data

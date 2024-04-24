@@ -1,5 +1,10 @@
-from config import PHASE_ENDS_MAX
-
+from config import PHASE_ENDS_MAX, SOURCE_DATA_FOLDER_PATH, TEMP_EVOL_FILE, PRES_EVOL_FILE
+from scipy.interpolate import interp1d
+import pandas as pd
+import os
+import eel
+import numpy as np
+import numpy.typing as npt
 
 class Structure:
     """
@@ -10,32 +15,32 @@ class Structure:
         self,
         gui_inputs: dict,
     ) -> None:
-        self.steel_thick_in = gui_inputs.get('steel_thick')
-        self.concrete_thick = gui_inputs.get('concrete_thick')
-        self.steel_thick_out = 0  # Outer steel liner is not used in the software
-        self.radius_in = gui_inputs.get('radius_in')
-        self.tendons_stress = gui_inputs.get('tendons_stress')
-        self.tendons_area = gui_inputs.get('tendons_area')
-        self.density = gui_inputs.get('density')
-        self.water_cont = gui_inputs.get('water_cont')
-        self.therm_expan_coeff = gui_inputs.get('therm_expan_coeff')
-        self.modulus_concrete = gui_inputs.get('modulus_concrete')
-        self.modulus_steel = gui_inputs.get('modulus_steel')
-        self.emissivity = gui_inputs.get('emissivity')
-        self.char_len = gui_inputs.get('char_len')
-        self.poisson = gui_inputs.get('poisson')
-        self.step_space = gui_inputs.get('step_space')
-        self.width = 1  # meter
-        self.t_init = gui_inputs.get('t_init')
-        self.temp_air_int = gui_inputs.get('t_in')
-        self.temp_air_ext = gui_inputs.get('t_out')
-        self.duration = gui_inputs.get('duration')
-        self.pressure_ext = gui_inputs.get('pressure_ext')
-        self.step_time_1 = gui_inputs.get('step_time_1')
-        self.step_time_2 = gui_inputs.get('step_time_2')
-        self.step_time_3 = gui_inputs.get('step_time_3')
-        self.step_time_4 = gui_inputs.get('step_time_4')
-        self.step_time_5 = gui_inputs.get('step_time_5')
+        self.steel_thick_in: float = float(gui_inputs.get('steel_thick'))
+        self.concrete_thick: float = float(gui_inputs.get('concrete_thick'))
+        self.steel_thick_out: float = 0.0  # Outer steel liner is not used in the software
+        self.radius_in: float = float(gui_inputs.get('radius_in'))
+        self.tendons_stress: float = float(gui_inputs.get('tendons_stress'))
+        self.tendons_area: float = float(gui_inputs.get('tendons_area'))
+        self.density: float = float(gui_inputs.get('density'))
+        self.water_cont: float = float(gui_inputs.get('water_cont'))
+        self.therm_expan_coeff: float = float(gui_inputs.get('therm_expan_coeff'))
+        self.modulus_concrete: float = float(gui_inputs.get('modulus_concrete'))
+        self.modulus_steel: float = float(gui_inputs.get('modulus_steel'))
+        self.emissivity: float = float(gui_inputs.get('emissivity'))
+        self.char_len: float = float(gui_inputs.get('char_len'))
+        self.poisson: float = float(gui_inputs.get('poisson'))
+        self.step_space: float = float(gui_inputs.get('step_space'))
+        self.width: float = 1.0  # meter
+        self.temp_init: float = float(gui_inputs.get('t_init'))
+        self.temp_air_int: float = float(gui_inputs.get('t_in'))
+        self.temp_air_ext: float = float(gui_inputs.get('t_out'))
+        self.duration: float = float(gui_inputs.get('duration'))
+        self.pressure_ext: float = float(gui_inputs.get('pressure_ext'))
+        self.step_time_1: float = float(gui_inputs.get('step_time_1'))
+        self.step_time_2: float = float(gui_inputs.get('step_time_2'))
+        self.step_time_3: float = float(gui_inputs.get('step_time_3'))
+        self.step_time_4: float = float(gui_inputs.get('step_time_4'))
+        self.step_time_5: float = float(gui_inputs.get('step_time_5'))
 
     @property
     def length(self) -> float:
@@ -195,6 +200,10 @@ class MeshTime:
 
 
 
+
+
+
+
 class Loads:
     """
     Class for storing information about the loads.
@@ -202,15 +211,58 @@ class Loads:
 
     def __init__(
         self,
-        gui_inputs: dict,
+        structure: Structure,
     ) -> None:
-        self.t_init = gui_inputs.get('t_init')
-        self.t_in = gui_inputs.get('t_in')
-        self.t_out = gui_inputs.get('t_out')
-        self.duration = gui_inputs.get('duration')
-        self.pressure_ext = gui_inputs.get('pressure_ext')
-        self.step_time_1 = gui_inputs.get('step_time_1')
-        self.step_time_2 = gui_inputs.get('step_time_2')
-        self.step_time_3 = gui_inputs.get('step_time_3')
-        self.step_time_4 = gui_inputs.get('step_time_4')
-        self.step_time_5 = gui_inputs.get('step_time_5')
+        self.temp_init = structure.temp_init
+        self.temp_air_int_0 = structure.temp_air_int
+        self.temp_air_ext_0 = structure.temp_air_ext
+        self.evol_air_temp_int: interp1d = self.__internal_air_evolution(TEMP_EVOL_FILE)
+        self.evol_air_pres_int: interp1d = self.__internal_air_evolution(PRES_EVOL_FILE)
+
+    @staticmethod
+    def __internal_air_evolution(evolution_file: str) -> interp1d:
+        file_path: str = SOURCE_DATA_FOLDER_PATH + evolution_file
+        if not os.path.isfile(file_path):
+            error_message: str = 'ERROR: File ' + evolution_file + ' is missing in folder ' + SOURCE_DATA_FOLDER_PATH
+            raise FileNotFoundError(error_message)
+        else:
+            excel_table = pd.read_excel(file_path, header=None)
+            x_axis = excel_table.iloc[:, 0].to_numpy()
+            y_axis = excel_table.iloc[:, 1].to_numpy()
+            return interp1d(x_axis, y_axis)
+
+    def get_current_air_temp(self, time: float) -> float:
+        return float(self.evol_air_temp_int(time))
+
+    def get_current_air_pres(self, time: float) -> float:
+        return float(self.evol_air_pres_int(time))
+
+class Results:
+    """
+    Class for storing results.
+    """
+
+    def __init__(
+        self,
+        mesh_space: MeshSpace,
+        mesh_time: MeshTime,
+    ) -> None:
+        self.duration: float = mesh_time.duration
+        self.temp_init: npt.NDArray[np.float64] = np.zeros(mesh_space.node_count, dtype=float)
+        self.temp_oper: npt.NDArray[np.float64] = np.zeros(mesh_space.node_count, dtype=float)
+        # self.temp_air_int_vect: list[float] = [0.0] * (mesh_time.time_steps_count + 1)
+        self.temp_air_int_vect: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
+        self.temp_grad_vect: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
+        self.pres_air_int_vect: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
+        self.heat_coef_int_vect: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
+        self.heat_coef_ext_vect: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
+        self.temp_matrix: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+
+
+
+
+    @property
+    def label_time(self) -> str:
+        if self.duration <= 60 * 60:
+            return str(int(self.duration / 60)) + 'm'
+        return str(int(self.duration / (60 * 60))) + 'h'

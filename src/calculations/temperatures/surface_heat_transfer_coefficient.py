@@ -1,5 +1,6 @@
 from src.config import STEF_BOLT_CONST, AIR_FLOW
 from src.calculations.temperatures.air_properties import calc_air_conductivity, calc_air_dyn_viscosity, calc_air_density, calc_air_heat_capacity
+from src.models import Structure
 
 
 def celsius_to_kelvin(temp: float) -> float:
@@ -35,8 +36,8 @@ def calc_surface_heat_transfer_coef(char_len: float, emissivity: float, temp_sur
     return total_coeff
 
 
-def calc_surface_resistance(char_len: float, emissivity: float, temp_surf: float, temp_air: float) -> float:
-    return 1 / calc_surface_heat_transfer_coef(char_len, emissivity, temp_surf, temp_air)
+def calc_surface_resistance(structure: Structure, temp_surf: float, temp_air: float) -> float:
+    return 1 / calc_surface_heat_transfer_coef(structure.char_len, structure.emissivity, temp_surf, temp_air)
 
 
 
