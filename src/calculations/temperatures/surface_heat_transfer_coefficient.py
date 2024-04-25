@@ -26,18 +26,18 @@ def calc_convective_coefficient(char_len: float, temp_surf: float, temp_air: flo
     return conv_coef
 
 
-def calc_surface_heat_transfer_coef(char_len: float, emissivity: float, temp_surf: float, temp_air: float) -> float:
+def calc_surface_heat_transfer_coef(structure: Structure, temp_surf: float, temp_air: float) -> float:
     # Temperatures (in inputs) are in Celsius
     temp_surf_k = celsius_to_kelvin(temp_surf)
     temp_air_k = celsius_to_kelvin(temp_air)
-    conv_coeff = calc_convective_coefficient(char_len, temp_surf_k, temp_air_k)
-    rad_coeff = emissivity * STEF_BOLT_CONST * (temp_surf_k + temp_air_k) * (temp_surf_k * temp_surf_k + temp_air_k * temp_air_k)
+    conv_coeff = calc_convective_coefficient(structure.char_len, temp_surf_k, temp_air_k)
+    rad_coeff = structure.emissivity * STEF_BOLT_CONST * (temp_surf_k + temp_air_k) * (temp_surf_k * temp_surf_k + temp_air_k * temp_air_k)
     total_coeff = conv_coeff + rad_coeff
     return total_coeff
 
 
 def calc_surface_resistance(structure: Structure, temp_surf: float, temp_air: float) -> float:
-    return 1 / calc_surface_heat_transfer_coef(structure.char_len, structure.emissivity, temp_surf, temp_air)
+    return 1 / calc_surface_heat_transfer_coef(structure, temp_surf, temp_air)
 
 
 

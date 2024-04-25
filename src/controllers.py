@@ -1,15 +1,20 @@
 from src.models import Structure, MeshSpace, MeshTime, Results, Loads
 from src.calculations.temperatures.steadystate_heat_transfer import calc_operating_temperatures
 import eel
-from general_functions import get_timestamp
+from src.general_functions import get_timestamp
 from src.calculations.temperatures.surface_heat_transfer_coefficient import calc_surface_resistance
 import numpy as np
 from src.calculations.temperatures.transient_heat_transfer import transient_heat_transfer
+from src.general_functions import double_print
+
+
+
+
 
 # Define the function that will be called from the GUI
 def run_analysis(gui_inputs):
     try:
-        eel.print_status(get_timestamp() + 'Python function started - loading inputs...')()
+        double_print('Python function started - loading inputs...')
 
         # Prepare the data for the analysis
         structure = Structure(gui_inputs)
@@ -37,8 +42,8 @@ def run_analysis(gui_inputs):
         results.heat_coef_int_vect[0] = 1 / calc_surface_resistance(structure, float(results.temp_oper[0]), loads.temp_air_int_0)
         results.heat_coef_ext_vect[0] = 1 / calc_surface_resistance(structure, float(results.temp_oper[-1]), loads.temp_air_ext_0)
         results.temp_matrix[0] = results.temp_oper
-        print(results.temp_matrix[0])
-        print(results.temp_matrix[1])
+        # print(results.temp_matrix[0])
+        # print(results.temp_matrix[1])
 
         print(transient_heat_transfer(structure, mesh_space, mesh_time, loads, results))
 
