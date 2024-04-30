@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+title: LOCAS - Loss-of-coolant Stresses
+version: 2.5
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Jakub
+    family-names: Holan
+    email: jakub.holan.software@gmail.com
+    orcid: 'https://orcid.org/0000-0002-6561-0323'
+repository-code: 'https://github.com/howa003/locas'
+license: GPL-3.0+
+date-released: 2024-04-20
