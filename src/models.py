@@ -43,6 +43,14 @@ class Structure:
         self.step_time_5: float = float(gui_inputs.get('step_time_5'))
 
     @property
+    def has_inner_steel(self) -> bool:
+        return self.steel_thick_in > 0
+
+    @property
+    def has_outer_steel(self) -> bool:
+        return self.steel_thick_out > 0
+
+    @property
     def length(self) -> float:
         return self.steel_thick_in + self.concrete_thick
 
@@ -144,7 +152,7 @@ class MeshSpace:
 
     @property
     def slice_index_steel_in(self) -> int:
-        return int((self.steel_thick / self.element_length) + 1)
+        return int(self.steel_thick / self.element_length)
 
     @property
     def slice_index_steel_out(self) -> int:
@@ -170,13 +178,14 @@ class MeshTime:
 
     @property
     def time_axis(self) -> list[float]:
+        # Note that the time axis contains the initial time (0) and the final time (duration)
         phase_1_end = min(PHASE_ENDS_MAX[0], self.duration)
         phase_2_end = min(PHASE_ENDS_MAX[1], self.duration)
         phase_3_end = min(PHASE_ENDS_MAX[2], self.duration)
         phase_4_end = min(PHASE_ENDS_MAX[3], self.duration)
         time = 0
         time_axis = []
-        while time < self.duration:
+        while time <= self.duration:
             time_axis.append(time)
             if time < phase_1_end:
                 time += self.step_time_1
@@ -192,10 +201,17 @@ class MeshTime:
 
     @property
     def time_steps_count(self) -> int:
-        return int(len(self.time_axis))
+        # Note that time steps are -1 compared to the time axis because step 0 is the already known initial state.
+        # Moreover, in each step we calculate the next step. Therefore, temperatures at time=duration are calculated in next-to-last step.
+        return int(len(self.time_axis)-1)
 
+    @property
+    def time_steps_range(self) -> range:
+        return range(int(self.time_steps_count))
 
-
+    def time_to_next_step(self, current_step: int) -> float:
+        time_axis = self.time_axis
+        return time_axis[current_step + 1] - time_axis[current_step]
 
 
 
