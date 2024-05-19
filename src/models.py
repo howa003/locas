@@ -58,11 +58,12 @@ class Structure:
     def modulus_ratio(self) -> float:
         return self.modulus_steel / self.modulus_concrete
 
+    @property
     def modulus_total(self) -> float:
-        return (self.modulus_concrete * self.concrete_thick + self.modulus_steel * (self.steel_thick_in + self.steel_thick_out)) / self.length
+        return float((self.modulus_concrete * self.concrete_thick + self.modulus_steel * (self.steel_thick_in + self.steel_thick_out)) / self.length)
 
     @property
-    def section_characteristics(self) -> tuple[float, float]:
+    def section_characteristics(self) -> tuple[float, float, float]:
         b1 = self.width * self.modulus_ratio
         b2 = self.width
         b3 = b1
@@ -84,7 +85,7 @@ class Structure:
         d2 = a2 * (c_tot - c2) ** 2
         d3 = a3 * (c_tot - c3) ** 2
         i_tot = i1 + i2 + i3 + d1 + d2 + d3
-        return c_tot, i_tot
+        return c_tot, i_tot, a_tot
 
     @property
     def center_of_section(self) -> float:
@@ -93,6 +94,10 @@ class Structure:
     @property
     def inertia_of_section(self) -> float:
         return self.section_characteristics[1]
+
+    @property
+    def area_of_section(self) -> float:
+        return self.section_characteristics[2]
 
 
 class MeshSpace:
@@ -203,6 +208,7 @@ class MeshTime:
     def time_steps_count(self) -> int:
         # Note that time steps are -1 compared to the time axis because step 0 is the already known initial state.
         # Moreover, in each step we calculate the next step. Therefore, temperatures at time=duration are calculated in next-to-last step.
+        # Thus, thermal stresses need to be calculated for time_steps_count+1
         return int(len(self.time_axis)-1)
 
     @property
@@ -273,6 +279,9 @@ class Results:
         self.heat_coef_int_vect: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
         self.heat_coef_ext_vect: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
         self.temp_matrix: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_fixed: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_clamped: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_free: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
 
 
 

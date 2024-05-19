@@ -6,7 +6,7 @@ from src.calculations.temperatures.surface_heat_transfer_coefficient import calc
 import numpy as np
 from src.calculations.temperatures.transient_heat_transfer import transient_heat_transfer
 from src.general_functions import double_print
-
+from src.calculations.stresses.thermal_stresses import calc_thermal_stresses
 
 
 
@@ -46,6 +46,8 @@ def run_analysis(gui_inputs):
         # print(results.temp_matrix[1])
 
         print(transient_heat_transfer(structure, mesh_space, mesh_time, loads, results))
+
+        calc_thermal_stresses(structure, mesh_space, mesh_time, loads, results)
 
         return 0
     except FileNotFoundError as exception:

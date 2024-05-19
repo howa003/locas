@@ -11,7 +11,8 @@ np.set_printoptions(linewidth=200)
 
 
 def get_material_conductivity(temp: float, index: int, structure: Structure, mesh_space: MeshSpace) -> float:
-    if structure.has_inner_steel and (index < mesh_space.slice_index_steel_in):
+    if structure.has_inner_steel and (index <= mesh_space.slice_index_steel_in):
+    # TODO: Rollback to: <
         return steel_conductivity(temp)
     elif structure.has_outer_steel and (index >= mesh_space.slice_index_steel_out):
         return steel_conductivity(temp)
@@ -38,7 +39,8 @@ def create_global_conduc_mat(temp_vect: npt.NDArray[np.float64], mesh_space: Mes
 
 
 def get_material_capacity(temp: float, index: int, structure: Structure, mesh_space: MeshSpace) -> float:
-    if structure.has_inner_steel and (index < mesh_space.slice_index_steel_in):
+    if structure.has_inner_steel and (index <= mesh_space.slice_index_steel_in):
+    # TODO: Rollback to: <
         return steel_volumetric_heat_capacity(temp)
     elif structure.has_outer_steel and (index >= mesh_space.slice_index_steel_out):
         return steel_volumetric_heat_capacity(temp)
