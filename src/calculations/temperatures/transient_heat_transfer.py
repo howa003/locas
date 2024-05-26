@@ -121,7 +121,7 @@ def transient_heat_transfer(
         mesh_space: MeshSpace,
         mesh_time: MeshTime,
         loads: Loads,
-        results: Results) -> npt.NDArray[np.float64]:
+        results: Results) -> int:
 
     # In a given time step ("current step"), we calculate the temperature distribution for the next time step ("future time step") using the temperature distribution from the current time step.
     for current_step in mesh_time.time_steps_range:
@@ -168,7 +168,7 @@ def transient_heat_transfer(
     # TODO: Simplify the algorithm by moving the first guess of the future temperature distribution to the beginning of the loop
     # TODO: Modify the calculation (use sparse matrices) to improve the performance of the algorithm
 
-    return results.temp_matrix
+    return 0
 
 
 

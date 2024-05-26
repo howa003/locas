@@ -23,7 +23,7 @@ def calc_thermal_stresses(
         mesh_space: MeshSpace,
         mesh_time: MeshTime,
         loads: Loads,
-        results: Results) -> npt.NDArray[np.float64]:
+        results: Results) -> int:
 
     mat_stress_fixed = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
     mat_stress_clamped = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
@@ -104,10 +104,11 @@ def calc_thermal_stresses(
 
 
 
-    print(mat_stress_fixed)
-    print(mat_stress_clamped)
-    print(mat_stress_free)
+    # print(mat_stress_fixed)
+    # print(mat_stress_clamped)
+    # print(mat_stress_free)
 
+    # TODO: Add the results to the results object
 
     return 0
 
