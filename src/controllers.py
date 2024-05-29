@@ -46,9 +46,9 @@ def run_analysis(gui_inputs):
         # print(results.temp_matrix[0])
         # print(results.temp_matrix[1])
 
-        run_transient = transient_heat_transfer(structure, mesh_space, mesh_time, loads, results)
+        print(transient_heat_transfer(structure, mesh_space, mesh_time, loads, results))
 
-        calc_thermal_stresses(structure, mesh_space, mesh_time, loads, results)
+        print(calc_thermal_stresses(structure, mesh_space, mesh_time, loads, results))
 
         double_print('Python function finished.')
 

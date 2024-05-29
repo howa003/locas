@@ -121,54 +121,61 @@ def transient_heat_transfer(
         mesh_space: MeshSpace,
         mesh_time: MeshTime,
         loads: Loads,
-        results: Results) -> int:
+        results: Results) -> str:
 
-    # In a given time step ("current step"), we calculate the temperature distribution for the next time step ("future time step") using the temperature distribution from the current time step.
-    for current_step in mesh_time.time_steps_range:
+    try:
 
-        # 0) Print the progress
-        ftr_step = current_step + 1
-        ftr_time = mesh_time.time_axis[ftr_step]  # Time of the future time step
-        progress_percent = int(1000 * ftr_step / mesh_time.time_steps_count)/10
-        double_print('Calculating temperatures for time: ' + str(ftr_time) + ' s (step ' + str(ftr_step) + ' out of ' + str(mesh_time.time_steps_count) + '; ' + str(progress_percent) + '%)')
+        # In a given time step ("current step"), we calculate the temperature distribution for the next time step ("future time step") using the temperature distribution from the current time step.
+        for current_step in mesh_time.time_steps_range:
 
-        # 1) Obtain the current temperatures and calculate the conductivity matrix and capacity matrix
-        curr_temp_distr: npt.NDArray[np.float64] = results.temp_matrix[current_step]
-        curr_conduc_mat: npt.NDArray[np.float64] = create_global_conduc_mat(curr_temp_distr, mesh_space, structure)
-        curr_capac_mat: npt.NDArray[np.float64] = create_global_capac_mat(curr_temp_distr, mesh_space, structure)
+            # 0) Print the progress
+            ftr_step = current_step + 1
+            ftr_time = mesh_time.time_axis[ftr_step]  # Time of the future time step
+            progress_percent = int(1000 * ftr_step / mesh_time.time_steps_count)/10
+            double_print('Calculating temperatures for time: ' + str(ftr_time) + ' s (step ' + str(ftr_step) + ' out of ' + str(mesh_time.time_steps_count) + '; ' + str(progress_percent) + '%)')
 
-        # 2) Create a first guess of the temperature distribution in the future time step
-        ftr_temp_distr: npt.NDArray[np.float64] = np.copy(curr_temp_distr)  #
+            # 1) Obtain the current temperatures and calculate the conductivity matrix and capacity matrix
+            curr_temp_distr: npt.NDArray[np.float64] = results.temp_matrix[current_step]
+            curr_conduc_mat: npt.NDArray[np.float64] = create_global_conduc_mat(curr_temp_distr, mesh_space, structure)
+            curr_capac_mat: npt.NDArray[np.float64] = create_global_capac_mat(curr_temp_distr, mesh_space, structure)
 
-        # 3) Calculate the flux vector and its derivative in the future time step
-        ftr_temp_gas = loads.get_current_air_temp(ftr_time)  # Temperature of the inner gas in the future time step
-        flux_vect: npt.NDArray[np.float64] = get_flux_vect(ftr_temp_distr, ftr_temp_gas, structure, mesh_space)
-        flux_vect_deriv: npt.NDArray[np.float64] = get_flux_vect_deriv(ftr_temp_distr, ftr_temp_gas, structure, mesh_space)
+            # 2) Create a first guess of the temperature distribution in the future time step
+            ftr_temp_distr: npt.NDArray[np.float64] = np.copy(curr_temp_distr)  #
 
-        # 4) Calculate the residua (errors) of the transient heat transfer matrix equation and residua of its derivation
-        residuum_vect: npt.NDArray[np.float64] = get_residuum(curr_conduc_mat, curr_capac_mat, flux_vect, ftr_temp_distr, curr_temp_distr, mesh_time.time_to_next_step(current_step))
-        residuum_vect_deriv: npt.NDArray[np.float64] = get_residuum_deriv(curr_conduc_mat, curr_capac_mat, flux_vect_deriv, mesh_time.time_to_next_step(current_step))
-        max_residuum: float = np.amax(np.absolute(residuum_vect))
+            # 3) Calculate the flux vector and its derivative in the future time step
+            ftr_temp_gas = loads.get_current_air_temp(ftr_time)  # Temperature of the inner gas in the future time step
+            flux_vect: npt.NDArray[np.float64] = get_flux_vect(ftr_temp_distr, ftr_temp_gas, structure, mesh_space)
+            flux_vect_deriv: npt.NDArray[np.float64] = get_flux_vect_deriv(ftr_temp_distr, ftr_temp_gas, structure, mesh_space)
 
-        # 5) If the error is large, we will make an adjustment to the temperatures in the future time step and recalculate the flux vector and its derivative
-        while max_residuum > (1 / 1000):
-            temp_corr = np.linalg.solve(residuum_vect_deriv, residuum_vect)
-            ftr_temp_distr = ftr_temp_distr - temp_corr
+            # 4) Calculate the residua (errors) of the transient heat transfer matrix equation and residua of its derivation
+            residuum_vect: npt.NDArray[np.float64] = get_residuum(curr_conduc_mat, curr_capac_mat, flux_vect, ftr_temp_distr, curr_temp_distr, mesh_time.time_to_next_step(current_step))
+            residuum_vect_deriv: npt.NDArray[np.float64] = get_residuum_deriv(curr_conduc_mat, curr_capac_mat, flux_vect_deriv, mesh_time.time_to_next_step(current_step))
+            max_residuum: float = np.amax(np.absolute(residuum_vect))
 
-            flux_vect = get_flux_vect(ftr_temp_distr, ftr_temp_gas, structure, mesh_space)
-            flux_vect_deriv = get_flux_vect_deriv(ftr_temp_distr, ftr_temp_gas, structure, mesh_space)
+            # 5) If the error is large, we will make an adjustment to the temperatures in the future time step and recalculate the flux vector and its derivative
+            while max_residuum > (1 / 1000):
+                temp_corr = np.linalg.solve(residuum_vect_deriv, residuum_vect)
+                ftr_temp_distr = ftr_temp_distr - temp_corr
 
-            residuum_vect = get_residuum(curr_conduc_mat, curr_capac_mat, flux_vect, ftr_temp_distr, curr_temp_distr, mesh_time.time_to_next_step(current_step))
-            residuum_vect_deriv = get_residuum_deriv(curr_conduc_mat, curr_capac_mat, flux_vect_deriv, mesh_time.time_to_next_step(current_step))
-            max_residuum = np.amax(np.absolute(residuum_vect))
+                flux_vect = get_flux_vect(ftr_temp_distr, ftr_temp_gas, structure, mesh_space)
+                flux_vect_deriv = get_flux_vect_deriv(ftr_temp_distr, ftr_temp_gas, structure, mesh_space)
 
-        # 6) Save the final future temperature distribution into the temperature matrix
-        results.temp_matrix[current_step + 1] = ftr_temp_distr
+                residuum_vect = get_residuum(curr_conduc_mat, curr_capac_mat, flux_vect, ftr_temp_distr, curr_temp_distr, mesh_time.time_to_next_step(current_step))
+                residuum_vect_deriv = get_residuum_deriv(curr_conduc_mat, curr_capac_mat, flux_vect_deriv, mesh_time.time_to_next_step(current_step))
+                max_residuum = np.amax(np.absolute(residuum_vect))
 
-    # TODO: Simplify the algorithm by moving the first guess of the future temperature distribution to the beginning of the loop
-    # TODO: Modify the calculation (use sparse matrices) to improve the performance of the algorithm
+            # 6) Save the final future temperature distribution into the temperature matrix
+            results.temp_matrix[current_step + 1] = ftr_temp_distr
 
-    return 0
+        # TODO: Simplify the algorithm by moving the first guess of the future temperature distribution to the beginning of the loop
+        # TODO: Modify the calculation (use sparse matrices) to improve the performance of the algorithm
+
+        result_message = "Transient heat transfer calculated successfully."
+
+    except Exception as exception:
+        result_message = "Transient heat transfer calculation FAILED: " + str(exception)
+
+    return result_message
 
 
 

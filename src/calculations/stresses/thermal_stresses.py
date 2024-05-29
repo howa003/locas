@@ -23,94 +23,98 @@ def calc_thermal_stresses(
         mesh_space: MeshSpace,
         mesh_time: MeshTime,
         loads: Loads,
-        results: Results) -> int:
+        results: Results) -> str:
 
-    mat_stress_fixed = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
-    mat_stress_clamped = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
-    mat_stress_free = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
+    try:
+        mat_stress_fixed = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
+        mat_stress_clamped = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
+        mat_stress_free = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
 
-    mat_strain_fixed = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
-    mat_strain_clamped = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
-    mat_strain_free = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
+        mat_strain_fixed = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
+        mat_strain_clamped = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
+        mat_strain_free = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
 
-    therm_coeff = structure.therm_expan_coeff
-    poisson = structure.poisson
+        therm_coeff = structure.therm_expan_coeff
+        poisson = structure.poisson
 
-    for current_step in range(int(mesh_time.time_steps_count)+1):
-        curr_temps = results.temp_matrix[current_step]
-        curr_temp_diff = np.zeros(int(mesh_space.node_count))
+        for current_step in range(int(mesh_time.time_steps_count) + 1):
+            curr_temps = results.temp_matrix[current_step]
+            curr_temp_diff = np.zeros(int(mesh_space.node_count))
 
-        # Calculate temperature differences for each node
-        for j in mesh_space.nodes_range:
-            curr_temp_diff[j] = (curr_temps[j] - results.temp_init[j])
+            # Calculate temperature differences for each node
+            for j in mesh_space.nodes_range:
+                curr_temp_diff[j] = (curr_temps[j] - results.temp_init[j])
 
-        theor_strains_list = np.zeros(int(mesh_space.node_count))
-        fixed_stresses_list = np.zeros(int(mesh_space.node_count))
+            theor_strains_list = np.zeros(int(mesh_space.node_count))
+            fixed_stresses_list = np.zeros(int(mesh_space.node_count))
 
-        # Calculate fixed stresses for each node
-        for j in mesh_space.nodes_range:
-            theor_strain = float(curr_temp_diff[j] * therm_coeff)
-            theor_strains_list[j] = theor_strain
-            fixed_stress = - calc_stress_from_strain(theor_strain, j, mesh_space, structure)
-            fixed_stresses_list[j] = fixed_stress
+            # Calculate fixed stresses for each node
+            for j in mesh_space.nodes_range:
+                theor_strain = float(curr_temp_diff[j] * therm_coeff)
+                theor_strains_list[j] = theor_strain
+                fixed_stress = - calc_stress_from_strain(theor_strain, j, mesh_space, structure)
+                fixed_stresses_list[j] = fixed_stress
 
-        # print(current_step)
-        # print(fixed_stresses_list)
+            # print(current_step)
+            # print(fixed_stresses_list)
 
-        # Calculate thermal resultants
-        normal_force = 0
-        bending_moment = 0
-        for j in mesh_space.element_range:
-            stress = (fixed_stresses_list[j] + fixed_stresses_list[j + 1]) / 2
-            force = stress * mesh_space.element_length * structure.width
-            arm = (structure.center_of_section - mesh_space.element_centers[j])
-            # print('Force1: ' + str(force))
-            # print(arm)
-            normal_force += force
-            bending_moment += force * arm
-            # print('Forces sum: ' + str(normal_force))
-            # print(bending_moment)
-        # print('Forces sum final: ' + str(normal_force))
-        # print('Moment sum final: ' + str(bending_moment))
+            # Calculate thermal resultants
+            normal_force = 0
+            bending_moment = 0
+            for j in mesh_space.element_range:
+                stress = (fixed_stresses_list[j] + fixed_stresses_list[j + 1]) / 2
+                force = stress * mesh_space.element_length * structure.width
+                arm = (structure.center_of_section - mesh_space.element_centers[j])
+                # print('Force1: ' + str(force))
+                # print(arm)
+                normal_force += force
+                bending_moment += force * arm
+                # print('Forces sum: ' + str(normal_force))
+                # print(bending_moment)
+            # print('Forces sum final: ' + str(normal_force))
+            # print('Moment sum final: ' + str(bending_moment))
 
+            # Calculate strain and curvature
+            # TODO: Rollback to modulus_total
+            strain = -normal_force / (structure.modulus_concrete * structure.area_of_section)
+            curvature = -bending_moment / (structure.modulus_concrete * structure.inertia_of_section)
 
-        # Calculate strain and curvature
-        # TODO: Rollback to modulus_total
-        strain = -normal_force / (structure.modulus_concrete * structure.area_of_section)
-        curvature = -bending_moment / (structure.modulus_concrete * structure.inertia_of_section)
+            # print(strain*1000000)
+            # print(curvature*1000000)
 
-        # print(strain*1000000)
-        # print(curvature*1000000)
+            stresses_clamped_list = np.zeros(int(mesh_space.node_count))
+            stresses_free_list = np.zeros(int(mesh_space.node_count))
 
-        stresses_clamped_list = np.zeros(int(mesh_space.node_count))
-        stresses_free_list = np.zeros(int(mesh_space.node_count))
+            # Calculate clamped and free stresses for each node
+            nodes_positions = mesh_space.nodes_positions
+            for j in mesh_space.nodes_range:
+                theor_strain = float(theor_strains_list[j])
+                node_loc = nodes_positions[j]
+                strain_real_clamped = strain
+                strain_real_free = strain + curvature * (structure.center_of_section - node_loc)
+                strain_prev_clamped = strain_real_clamped - theor_strain
+                strain_prev_free = strain_real_free - theor_strain
+                stresses_clamped_list[j] = calc_stress_from_strain(strain_prev_clamped, j, mesh_space, structure)
+                stresses_free_list[j] = calc_stress_from_strain(strain_prev_free, j, mesh_space, structure)
 
-        # Calculate clamped and free stresses for each node
-        nodes_positions = mesh_space.nodes_positions
-        for j in mesh_space.nodes_range:
-            theor_strain = float(theor_strains_list[j])
-            node_loc = nodes_positions[j]
-            strain_real_clamped = strain
-            strain_real_free = strain + curvature * (structure.center_of_section - node_loc)
-            strain_prev_clamped = strain_real_clamped - theor_strain
-            strain_prev_free = strain_real_free - theor_strain
-            stresses_clamped_list[j] = calc_stress_from_strain(strain_prev_clamped, j, mesh_space, structure)
-            stresses_free_list[j] = calc_stress_from_strain(strain_prev_free, j, mesh_space, structure)
+            mat_stress_fixed[current_step] = (1 / (1 - poisson)) * fixed_stresses_list
+            mat_stress_clamped[current_step] = (1 / (1 - poisson)) * stresses_clamped_list
+            mat_stress_free[current_step] = (1 / (1 - poisson)) * stresses_free_list
 
-        mat_stress_fixed[current_step] = (1 / (1 - poisson)) * fixed_stresses_list
-        mat_stress_clamped[current_step] = (1 / (1 - poisson)) * stresses_clamped_list
-        mat_stress_free[current_step] = (1 / (1 - poisson)) * stresses_free_list
+        results.stress_temp_fixed = mat_stress_fixed
+        results.stress_temp_clamped = mat_stress_clamped
+        results.stress_temp_free = mat_stress_free
 
+        print(results.stress_temp_fixed[-1])
+        print(results.stress_temp_clamped[-1])
+        print(results.stress_temp_free[-1])
 
+        result_message = "Thermal stresses calculated successfully."
 
+    except Exception as exception:
+        result_message = "Thermal stresses calculation FAILED: " + str(exception)
 
-    # print(mat_stress_fixed)
-    # print(mat_stress_clamped)
-    # print(mat_stress_free)
-
-    # TODO: Add the results to the results object
-
-    return 0
+    return result_message
 
 
 

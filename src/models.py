@@ -207,8 +207,8 @@ class MeshTime:
     @property
     def time_steps_count(self) -> int:
         # Note that time steps are -1 compared to the time axis because step 0 is the already known initial state.
-        # Moreover, in each step we calculate the next step. Therefore, temperatures at time=duration are calculated in next-to-last step.
-        # Thus, thermal stresses need to be calculated for time_steps_count+1
+        # Moreover, in transient heat transfer, each time step we calculate the temperatures in the next step. Therefore, temperatures at time=duration are calculated in next-to-last step.
+        # Thus, stresses (thermal, ipi, and cpi) need to be calculated for time_steps_count+1
         return int(len(self.time_axis)-1)
 
     @property
@@ -282,7 +282,9 @@ class Results:
         self.stress_fixed: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
         self.stress_clamped: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
         self.stress_free: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
-
+        self.stress_temp_fixed: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_temp_clamped: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_temp_free: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
 
 
 
