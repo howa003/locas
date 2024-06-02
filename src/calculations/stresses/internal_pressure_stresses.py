@@ -47,6 +47,19 @@ Note for GitHub Copilot: We will refactor the code commented below.
 # print('===== Overpressure ended. =====')
 
 
+def get_lame_stress(gas_pressure: float, current_radius: float, structure: Structure) -> float:
+    '''
+    This function calculates the Lame stress for a given gas pressure and current radius.
+    :param gas_pressure:
+    :param current_radius:
+    :param structure:
+    :return:
+    '''
+    ri = structure.radius_in
+    re = structure.radius_out
+    
+    return 0.0
+
 
 def calculate_pressure_stresses(
         structure: Structure,
@@ -61,6 +74,19 @@ def calculate_pressure_stresses(
         matrix_stress_pressure = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
         vector_strain_pressure = np.zeros((int(mesh_space.node_count)))
         vector_stress_pressure = np.zeros((int(mesh_space.node_count)))
+
+        # Initialize the vector for the maximum stresses
+        vector_max_stress_pressure = np.zeros((int(mesh_time.time_steps_count + 1)))
+
+        # Calculate the internal pressure stresses
+        node_centers_list = mesh_space.element_centers_from_zero
+        for i in range(int(mesh_time.time_steps_count) + 1):
+            current_time = mesh_time.time_axis[i]
+            gas_pressure = loads.get_current_air_pres(current_time)
+            max_stress_pressure = 0
+            for j in mesh_space.nodes_range:
+                current_radius = node_centers_list[j]
+                stress_lame = get_lame_stress(gas_pressure, current_radius, structure)
 
 
 

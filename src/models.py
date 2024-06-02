@@ -52,7 +52,11 @@ class Structure:
 
     @property
     def length(self) -> float:
-        return self.steel_thick_in + self.concrete_thick
+        return self.steel_thick_in + self.concrete_thick + self.steel_thick_out
+
+    @property
+    def radius_out(self) -> float:
+        return self.radius_in + self.length
 
     @property
     def modulus_ratio(self) -> float:
