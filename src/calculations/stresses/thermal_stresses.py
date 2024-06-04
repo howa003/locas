@@ -1,21 +1,7 @@
 from src.models import Structure, MeshSpace, MeshTime, Results, Loads
 import numpy as np
 import numpy.typing as npt
-
-
-def calc_stress_from_strain(strain: float, index: int, mesh_space: MeshSpace, structure: Structure) -> float:
-    if structure.has_inner_steel and (index <= mesh_space.slice_index_steel_in):
-    # TODO: Rollback to: if structure.has_inner_steel and (index < mesh_space.slice_index_steel_in):
-        modulus = structure.modulus_steel
-    elif structure.has_outer_steel and (index >= mesh_space.slice_index_steel_out):
-        modulus = structure.modulus_steel
-    else:
-        modulus = structure.modulus_concrete
-    return strain * modulus
-
-
-
-
+from src.calculations.stresses.general_functions import calc_stress_from_strain
 
 
 def calc_thermal_stresses(

@@ -6,6 +6,7 @@ import eel
 import numpy as np
 import numpy.typing as npt
 
+
 class Structure:
     """
     Class for storing information about the structure.
@@ -36,6 +37,7 @@ class Structure:
         self.temp_air_ext: float = float(gui_inputs.get('t_out'))
         self.duration: float = float(gui_inputs.get('duration'))
         self.pressure_ext: float = float(gui_inputs.get('pressure_ext'))
+        self.pressure_coeff: float = float(gui_inputs.get('pressure_coeff'))
         self.step_time_1: float = float(gui_inputs.get('step_time_1'))
         self.step_time_2: float = float(gui_inputs.get('step_time_2'))
         self.step_time_3: float = float(gui_inputs.get('step_time_3'))
@@ -160,11 +162,20 @@ class MeshSpace:
         return [element_center + self.radius_in for element_center in self.element_centers]
 
     @property
+    def node_centers_from_zero(self) -> list[float]:
+        return [node_center + self.radius_in for node_center in self.nodes_positions]
+
+    @property
     def slice_index_steel_in(self) -> int:
         return int(self.steel_thick / self.element_length)
 
     @property
     def slice_index_steel_out(self) -> int:
+        '''
+        Returns the index of the element where the outer steel liner ends.
+        If there is no outer steel liner, returns the total number of elements.
+        :return:
+        '''
         return int((self.total_length - self.steel_thick_out) / self.element_length)
 
 
@@ -289,6 +300,8 @@ class Results:
         self.stress_temp_fixed: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
         self.stress_temp_clamped: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
         self.stress_temp_free: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_internal_pressure: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.strain_internal_pressure: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
 
 
 
