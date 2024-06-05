@@ -45,6 +45,10 @@ class Structure:
         self.step_time_5: float = float(gui_inputs.get('step_time_5'))
 
     @property
+    def radius_tendons(self) -> float:
+        return self.radius_in + self.length/2  # TODO: Change this to an input.
+
+    @property
     def has_inner_steel(self) -> bool:
         return self.steel_thick_in > 0
 
