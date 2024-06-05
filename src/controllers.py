@@ -6,8 +6,8 @@ from src.calculations.temperatures.surface_heat_transfer_coefficient import calc
 import numpy as np
 from src.calculations.temperatures.transient_heat_transfer import transient_heat_transfer
 from src.general_functions import double_print
-
-
+from src.calculations.stresses.thermal_stresses import calc_thermal_stresses
+from src.calculations.stresses.internal_pressure_stresses import calculate_pressure_stresses
 
 
 
@@ -20,6 +20,9 @@ def run_analysis(gui_inputs):
         structure = Structure(gui_inputs)
         mesh_space = MeshSpace(structure)
         mesh_time = MeshTime(structure)
+
+        print(mesh_space.slice_index_steel_in)
+        print(mesh_space.slice_index_steel_out)
 
         # Initialize the loads object
         loads = Loads(structure)
@@ -36,6 +39,7 @@ def run_analysis(gui_inputs):
         print(results.temp_oper)
 
         # Fill results from time_step = 0 (i.e., operating temperatures)
+        # TODO: Refactor this part (make it a separate function)
         results.temp_air_int_vect[0] = loads.temp_air_int_0
         results.pres_air_int_vect[0] = loads.get_current_air_pres(0)
         results.temp_grad_vect[0] = (float(results.temp_oper[0]) - float(results.temp_oper[-1]))
@@ -46,6 +50,13 @@ def run_analysis(gui_inputs):
         # print(results.temp_matrix[1])
 
         print(transient_heat_transfer(structure, mesh_space, mesh_time, loads, results))
+
+        print(calc_thermal_stresses(structure, mesh_space, mesh_time, loads, results))
+
+        print(calculate_pressure_stresses(structure, mesh_space, mesh_time, loads, results))
+        print(results.stress_internal_pressure)
+
+        double_print('Python function finished.')
 
         return 0
     except FileNotFoundError as exception:

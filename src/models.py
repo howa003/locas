@@ -6,6 +6,7 @@ import eel
 import numpy as np
 import numpy.typing as npt
 
+
 class Structure:
     """
     Class for storing information about the structure.
@@ -36,6 +37,7 @@ class Structure:
         self.temp_air_ext: float = float(gui_inputs.get('t_out'))
         self.duration: float = float(gui_inputs.get('duration'))
         self.pressure_ext: float = float(gui_inputs.get('pressure_ext'))
+        self.pressure_coeff: float = float(gui_inputs.get('pressure_coeff'))
         self.step_time_1: float = float(gui_inputs.get('step_time_1'))
         self.step_time_2: float = float(gui_inputs.get('step_time_2'))
         self.step_time_3: float = float(gui_inputs.get('step_time_3'))
@@ -52,17 +54,22 @@ class Structure:
 
     @property
     def length(self) -> float:
-        return self.steel_thick_in + self.concrete_thick
+        return self.steel_thick_in + self.concrete_thick + self.steel_thick_out
+
+    @property
+    def radius_out(self) -> float:
+        return self.radius_in + self.length
 
     @property
     def modulus_ratio(self) -> float:
         return self.modulus_steel / self.modulus_concrete
 
+    @property
     def modulus_total(self) -> float:
-        return (self.modulus_concrete * self.concrete_thick + self.modulus_steel * (self.steel_thick_in + self.steel_thick_out)) / self.length
+        return float((self.modulus_concrete * self.concrete_thick + self.modulus_steel * (self.steel_thick_in + self.steel_thick_out)) / self.length)
 
     @property
-    def section_characteristics(self) -> tuple[float, float]:
+    def section_characteristics(self) -> tuple[float, float, float]:
         b1 = self.width * self.modulus_ratio
         b2 = self.width
         b3 = b1
@@ -84,7 +91,7 @@ class Structure:
         d2 = a2 * (c_tot - c2) ** 2
         d3 = a3 * (c_tot - c3) ** 2
         i_tot = i1 + i2 + i3 + d1 + d2 + d3
-        return c_tot, i_tot
+        return c_tot, i_tot, a_tot
 
     @property
     def center_of_section(self) -> float:
@@ -93,6 +100,10 @@ class Structure:
     @property
     def inertia_of_section(self) -> float:
         return self.section_characteristics[1]
+
+    @property
+    def area_of_section(self) -> float:
+        return self.section_characteristics[2]
 
 
 class MeshSpace:
@@ -151,11 +162,20 @@ class MeshSpace:
         return [element_center + self.radius_in for element_center in self.element_centers]
 
     @property
+    def node_centers_from_zero(self) -> list[float]:
+        return [node_center + self.radius_in for node_center in self.nodes_positions]
+
+    @property
     def slice_index_steel_in(self) -> int:
         return int(self.steel_thick / self.element_length)
 
     @property
     def slice_index_steel_out(self) -> int:
+        '''
+        Returns the index of the element where the outer steel liner ends.
+        If there is no outer steel liner, returns the total number of elements.
+        :return:
+        '''
         return int((self.total_length - self.steel_thick_out) / self.element_length)
 
 
@@ -202,7 +222,8 @@ class MeshTime:
     @property
     def time_steps_count(self) -> int:
         # Note that time steps are -1 compared to the time axis because step 0 is the already known initial state.
-        # Moreover, in each step we calculate the next step. Therefore, temperatures at time=duration are calculated in next-to-last step.
+        # Moreover, in transient heat transfer, each time step we calculate the temperatures in the next step. Therefore, temperatures at time=duration are calculated in next-to-last step.
+        # Thus, stresses (thermal, ipi, and cpi) need to be calculated for time_steps_count+1
         return int(len(self.time_axis)-1)
 
     @property
@@ -273,7 +294,14 @@ class Results:
         self.heat_coef_int_vect: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
         self.heat_coef_ext_vect: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
         self.temp_matrix: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
-
+        self.stress_fixed: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_clamped: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_free: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_temp_fixed: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_temp_clamped: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_temp_free: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_internal_pressure: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.strain_internal_pressure: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
 
 
 
