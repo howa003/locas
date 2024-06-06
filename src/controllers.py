@@ -8,7 +8,7 @@ from src.calculations.temperatures.transient_heat_transfer import transient_heat
 from src.general_functions import double_print
 from src.calculations.stresses.thermal_stresses import calc_thermal_stresses
 from src.calculations.stresses.internal_pressure_stresses import calculate_pressure_stresses
-
+from src.calculations.stresses.prestressing_stresses import calc_circumferential_stress
 
 
 # Define the function that will be called from the GUI
@@ -54,7 +54,10 @@ def run_analysis(gui_inputs):
         print(calc_thermal_stresses(structure, mesh_space, mesh_time, loads, results))
 
         print(calculate_pressure_stresses(structure, mesh_space, mesh_time, loads, results))
-        print(results.stress_internal_pressure)
+
+        print(calc_circumferential_stress(structure, mesh_space, mesh_time, loads, results))
+
+        # TODO: Sum all the stresses and verify results.
 
         double_print('Python function finished.')
 

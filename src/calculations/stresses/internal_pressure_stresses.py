@@ -48,7 +48,6 @@ def calculate_pressure_stresses(
 
         # Calculate the internal pressure stresses
         node_centers_list = mesh_space.node_centers_from_zero
-        print(node_centers_list)
         for i in range(int(mesh_time.time_steps_count) + 1):
             current_time = mesh_time.time_axis[i]
             gas_pressure = loads.get_current_air_pres(current_time)
