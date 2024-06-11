@@ -133,6 +133,8 @@ def transient_heat_transfer(
             ftr_time = mesh_time.time_axis[ftr_step]  # Time of the future time step
             progress_percent = int(1000 * ftr_step / mesh_time.time_steps_count)/10
             double_print('Calculating temperatures for time: ' + str(ftr_time) + ' s (step ' + str(ftr_step) + ' out of ' + str(mesh_time.time_steps_count) + '; ' + str(progress_percent) + '%)')
+            # TODO: Set the print to show only every 1% of the progress. Currently it shows every step.
+            # TODO: Make the progress bar more wide.
 
             # 1) Obtain the current temperatures and calculate the conductivity matrix and capacity matrix
             curr_temp_distr: npt.NDArray[np.float64] = results.temp_matrix[current_step]

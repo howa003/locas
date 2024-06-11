@@ -45,6 +45,10 @@ class Structure:
         self.step_time_5: float = float(gui_inputs.get('step_time_5'))
 
     @property
+    def radius_tendons(self) -> float:
+        return self.radius_in + self.length/2  # TODO: Change this to an input.
+
+    @property
     def has_inner_steel(self) -> bool:
         return self.steel_thick_in > 0
 
@@ -302,7 +306,11 @@ class Results:
         self.stress_temp_free: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
         self.stress_internal_pressure: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
         self.strain_internal_pressure: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
-
+        self.stress_prestressing: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.strain_prestressing: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_total_fixed: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_total_clamped: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_total_free: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
 
 
     @property
