@@ -50,7 +50,7 @@ def calculate_pressure_stresses(
         node_centers_list = mesh_space.node_centers_from_zero
         for i in range(int(mesh_time.time_steps_count) + 1):
             current_time = mesh_time.time_axis[i]
-            gas_pressure = loads.get_current_air_pres(current_time)
+            gas_pressure = structure.pressure_coeff * loads.get_current_air_pres(current_time)
             for j in mesh_space.nodes_range:
                 current_radius = node_centers_list[j]
                 stress_lame = get_lame_stress(gas_pressure, current_radius, structure)
@@ -60,8 +60,8 @@ def calculate_pressure_stresses(
                 matrix_stress_pressure[i][j] = real_stress
             max_stress_concrete_evol[i] = max(concrete_stress_distribution(matrix_stress_pressure[i], mesh_space, structure))
 
-        results.strain_internal_pressure = structure.pressure_coeff * matrix_strain_pressure
-        results.stress_internal_pressure = structure.pressure_coeff * matrix_stress_pressure
+        results.strain_internal_pressure = matrix_strain_pressure
+        results.stress_internal_pressure = matrix_stress_pressure
 
         result_message = "Internal pressure stresses calculated successfully."
 

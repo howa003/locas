@@ -16,7 +16,7 @@ function run_python(){
         t_in: parseFloat(document.getElementById("id_Ti0").value),
         t_out: parseFloat(document.getElementById("id_Te").value),
         duration: parseInt(document.getElementById("id_duration").value),
-        pressure_coeff: parseInt(document.getElementById("id_souciniteltlaku").value),
+        pressure_coeff: parseFloat(document.getElementById("id_souciniteltlaku").value),
         concrete_thick: parseFloat(document.getElementById("id_concrThick").value),
         steel_thick: parseFloat(document.getElementById("id_steelThick").value),
         radius_in: parseFloat(document.getElementById("id_polomerVnitrni").value),

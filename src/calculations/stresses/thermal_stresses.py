@@ -91,9 +91,9 @@ def calc_thermal_stresses(
         results.stress_temp_clamped = mat_stress_clamped
         results.stress_temp_free = mat_stress_free
 
-        print(results.stress_temp_fixed[-1])
-        print(results.stress_temp_clamped[-1])
-        print(results.stress_temp_free[-1])
+        # print(results.stress_temp_fixed[-1])
+        # print(results.stress_temp_clamped[-1])
+        # print(results.stress_temp_free[-1])
 
         result_message = "Thermal stresses calculated successfully."
 
