@@ -6,7 +6,7 @@ Using this software, the user can calculate the stresses induced by temperature,
 The graphical user interface is built using the Eel library, which allows the user to interact with the software through a web browser.
 
 <!-- TOC -->
-- [Eel](#eel)
+- [LOCAS](#locas---loss-of-coolant-stresses)
   - [Installation](#installation)
   - [Usage](#usage)
     - [Entering input values](#entering-input-values)
