@@ -11,6 +11,10 @@ from src.calculations.stresses.internal_pressure_stresses import calculate_press
 from src.calculations.stresses.prestressing_stresses import calc_circumferential_stress
 from src.calculations.stresses.total_stresses import sum_all_stresses
 from src.calculations.outputs.data_files import save_results_into_csv
+from src.calculations.outputs.static_figures import plot_all_figures
+from src.calculations.outputs.result_processing import process_results
+
+
 
 
 # Define the function that will be called from the GUI
@@ -29,6 +33,8 @@ def run_analysis(gui_inputs):
 
         # Initialize the results object
         results = Results(mesh_space, mesh_time)
+
+        results.analysis_identifier = str(int(structure.temp_air_int)) + 'C_' + str(int(structure.duration)) + 's_' + str(int(structure.tendons_stress)) + 'MPa'
 
         double_print('Inputs loaded.')
 
@@ -49,6 +55,9 @@ def run_analysis(gui_inputs):
         # print(results.temp_matrix[0])
         # print(results.temp_matrix[1])
 
+        print(mesh_space.slice_index_steel_out)
+        print(np.zeros(mesh_space.slice_index_steel_out))
+
         double_print('Calculation of transient heat transfer started.')
         double_print(transient_heat_transfer(structure, mesh_space, mesh_time, loads, results))
 
@@ -64,9 +73,15 @@ def run_analysis(gui_inputs):
         double_print('Calculation of total stresses started.')
         double_print(sum_all_stresses(results))
 
+        double_print('Processing of results started.')
+        double_print(process_results(structure, mesh_space, results))
+
         # Save the results into CSV files
         double_print('Saving results into CSV files...')
-        double_print(save_results_into_csv(structure, results))
+        double_print(save_results_into_csv(results))
+
+        # Print the graphs
+        plot_all_figures(structure, results, mesh_space, mesh_time)
 
         # TODO: Print graphs
 

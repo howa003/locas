@@ -50,7 +50,11 @@ def calculate_pressure_stresses(
         node_centers_list = mesh_space.node_centers_from_zero
         for i in range(int(mesh_time.time_steps_count) + 1):
             current_time = mesh_time.time_axis[i]
-            gas_pressure = structure.pressure_coeff * loads.get_current_air_pres(current_time)
+            if i == 0:
+                gas_pressure = loads.get_current_air_pres(current_time)  # During normal operations (first time step), the pressure coefficient should not be used.
+            else:
+                gas_pressure = structure.pressure_coeff * loads.get_current_air_pres(current_time)
+            results.pres_air_int_vect[i] = gas_pressure
             for j in mesh_space.nodes_range:
                 current_radius = node_centers_list[j]
                 stress_lame = get_lame_stress(gas_pressure, current_radius, structure)

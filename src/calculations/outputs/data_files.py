@@ -2,62 +2,69 @@ import numpy as np
 from src.models import Structure, MeshSpace, MeshTime, Results, Loads
 from pathlib import Path
 from src.general_functions import double_print
+import csv
+import json
+import os
 
-def save_csv_file(data_object, folder_path, filename):
+
+def save_object_properties(folder_name, obj) -> None:
     """
-    This function saves a numpy array into a CSV file.
+    This function saves the properties of an object into CSV files.
 
-    :param data_object: The data to be saved into the CSV file.
-    :type data_object: numpy.ndarray
-    :param folder_path: The path to the folder where the CSV file will be saved.
-    :type folder_path: str
-    :param filename: The name of the CSV file.
-    :type filename: str
-    :return: None
+    :param folder_name: The name of the folder where the CSV files will be saved.
+    :type folder_name: str
+    :param obj: The object whose properties will be saved.
+    :type obj: class:`object`
     """
 
-    file_path = folder_path + '/' + filename
-    np.savetxt(file_path, data_object, delimiter=";")
-    pass
+    # Iterate over each attribute in the object
+    for attr_name in obj.__dict__:
+        values = getattr(obj, attr_name)
+        file_path = os.path.join(folder_name, f"{attr_name}.csv")
+
+        # Write the attribute values into individual CSV files
+        with open(file_path, mode='w', newline='') as file:
+            writer = csv.writer(file, delimiter=';')
+
+            if isinstance(values, (int, float, str)):
+                # Wrap the value in a list
+                writer.writerow([values])
+            elif isinstance(values, dict):
+                # Write each dictionary key-value pair on a new row
+                for key, val in values.items():
+                    writer.writerow([key, val])
+            elif isinstance(values, list):
+                # Write the list as rows in the CSV file
+                writer.writerow(values)
+            elif isinstance(values, np.ndarray):
+                if values.ndim == 1:
+                    # Write the entire 1D array as one row
+                    writer.writerow(values)
+                elif values.ndim >= 2:
+                    # Write each row of the 2D (or higher) array
+                    for row in values:
+                        writer.writerow(row)
+            else:
+                double_print(f"Skipped: {attr_name} was not saved as it has an unsupported type of {type(values)}.")
 
 
 def save_results_into_csv(
-        structure: Structure,
         results: Results) -> str:
     """
     This function saves the results of the calculations into CSV files.
 
     :param results: A handle to the :class:`models.Results` object containing the results.
     :type results: class:`Results`
-    :param structure: A handle to the :class:`models.Structure` object containing information about the structure.
-    :type structure: class:`Structure`
     :return: String indicating the successful/unsuccessful saving of the results into CSV files.
     :rtype: str
     """
 
     try:
-        analysis_identifier = str(int(structure.temp_air_int)) + 'C_' + str(int(structure.duration)) + 's_' + str(int(structure.tendons_stress)) + 'MPa'
-        folder_path = 'saved_data/' + analysis_identifier
+        folder_path = os.path.join('analysis_results', results.analysis_identifier, 'csv_files')
         Path(folder_path).mkdir(parents=True, exist_ok=True)
         double_print('Folder ' + folder_path + ' was created.')
 
-        # Save the thermal stresses
-        save_csv_file(results.stress_temp_fixed, folder_path, 'thermal_fixed.csv')
-        save_csv_file(results.stress_temp_clamped, folder_path, 'thermal_clamped.csv')
-        save_csv_file(results.stress_temp_free, folder_path, 'thermal_free.csv')
-
-        # Save the internal-pressure stresses
-        save_csv_file(results.stress_internal_pressure, folder_path, 'internal_pressure.csv')
-
-        # Save the prestressing stresses
-        save_csv_file(results.stress_prestressing, folder_path, 'prestressing.csv')
-
-        # Save the total stresses
-        save_csv_file(results.stress_total_fixed, folder_path, 'total_fixed.csv')
-        save_csv_file(results.stress_total_clamped, folder_path, 'total_clamped.csv')
-        save_csv_file(results.stress_total_free, folder_path, 'total_free.csv')
-
-        # TODO: Save more results.
+        save_object_properties(folder_path, results)
 
         result_message = "Results saved into CSV files successfully."
 

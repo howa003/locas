@@ -1,7 +1,7 @@
 # Custom
 *.pyc
 src/original_code/
-src/saved_data/
+src/analysis_results/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
