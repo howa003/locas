@@ -142,8 +142,8 @@ class MeshSpace:
         return self.element_ids + [int(self.element_count)]
 
     @property
-    def x_axis_thickness(self) -> list[float]:
-        return [1000 * node_id * self.element_length for node_id in self.node_ids]
+    def x_axis_thickness(self) -> npt.NDArray[np.float64]:
+        return np.array([1000 * node_id * self.element_length for node_id in self.node_ids])
 
     @property
     def nodes_range(self) -> range:
@@ -288,19 +288,32 @@ class Results:
         mesh_space: MeshSpace,
         mesh_time: MeshTime,
     ) -> None:
+        self.analysis_identifier: str = ''
         self.duration: float = mesh_time.duration
         self.temp_init: npt.NDArray[np.float64] = np.zeros(mesh_space.node_count, dtype=float)
         self.temp_oper: npt.NDArray[np.float64] = np.zeros(mesh_space.node_count, dtype=float)
-        # self.temp_air_int_vect: list[float] = [0.0] * (mesh_time.time_steps_count + 1)
         self.temp_air_int_vect: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
         self.temp_grad_vect: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
         self.pres_air_int_vect: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
         self.heat_coef_int_vect: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
         self.heat_coef_ext_vect: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
+
         self.temp_matrix: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.temp_matrix_steel_inner: npt.NDArray[np.float64] = np.array([])
+        self.temp_matrix_concrete: npt.NDArray[np.float64] = np.array([])
+        self.temp_matrix_steel_outer: npt.NDArray[np.float64] = np.array([])
         self.stress_fixed: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_fixed_steel_inner: npt.NDArray[np.float64] = np.array([])
+        self.stress_fixed_concrete: npt.NDArray[np.float64] = np.array([])
+        self.stress_fixed_steel_outer: npt.NDArray[np.float64] = np.array([])
         self.stress_clamped: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_clamped_steel_inner: npt.NDArray[np.float64] = np.array([])
+        self.stress_clamped_concrete: npt.NDArray[np.float64] = np.array([])
+        self.stress_clamped_steel_outer: npt.NDArray[np.float64] = np.array([])
         self.stress_free: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_free_steel_inner: npt.NDArray[np.float64] = np.array([])
+        self.stress_free_concrete: npt.NDArray[np.float64] = np.array([])
+        self.stress_free_steel_outer: npt.NDArray[np.float64] = np.array([])
         self.stress_temp_fixed: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
         self.stress_temp_clamped: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
         self.stress_temp_free: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
@@ -311,7 +324,24 @@ class Results:
         self.stress_total_fixed: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
         self.stress_total_clamped: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
         self.stress_total_free: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
-
+        self.extreme_steps: dict[str, int] = {
+            'max_internal_pressure': 0,
+            'max_temp_air': 0,
+            'max_temp_steel_inner': 0,
+            'max_temp_concrete': 0,
+            'max_stress_fixed_concrete': 0,
+            'max_stress_clamped_concrete': 0,
+            'max_stress_free_concrete': 0,
+            'max_stress_fixed_steel_inner': 0,
+            'max_stress_clamped_steel_inner': 0,
+            'max_stress_free_steel_inner': 0,
+            'min_stress_fixed_concrete': 0,
+            'min_stress_clamped_concrete': 0,
+            'min_stress_free_concrete': 0,
+            'min_stress_fixed_steel_inner': 0,
+            'min_stress_clamped_steel_inner': 0,
+            'min_stress_free_steel_inner': 0,
+        }
 
     @property
     def label_time(self) -> str:
