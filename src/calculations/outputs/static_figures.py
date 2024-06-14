@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 # Plot průběhu napětí v konstrukci v daných časech
-def plot_stress_distributions(folder_path, file_name, figure_title, step_fixed, step_clamped, step_free, structure: Structure, results: Results) -> str:
+def plot_stress_distributions(folder_path, file_name, figure_title, step_fixed, step_clamped, step_free, structure: Structure, results: Results, mesh_space: MeshSpace) -> str:
     """
     This function plots the stress distributions in the structure at given time steps.
 
@@ -25,6 +25,8 @@ def plot_stress_distributions(folder_path, file_name, figure_title, step_fixed, 
     :type structure: class:`Structure`
     :param results: A handle to the :class:`models.Results` object containing the results.
     :type results: class:`Results`
+    :param mesh_space: A handle to the :class:`models.MeshSpace` object containing information about the space mesh.
+    :type mesh_space: class:`MeshSpace`
     :return: String indicating the successful/unsuccessful saving of the figure.
     :rtype: str
     """
@@ -34,28 +36,40 @@ def plot_stress_distributions(folder_path, file_name, figure_title, step_fixed, 
     plt.suptitle(figure_title, fontsize=16)
 
 
-    # >>>>> Label selection and min/max value calculation <<<<<
-    if (strssType == 'T'):
-        nameLabel = 'StrssCncrTnsn'
-    elif (strssType == 'C'):
-        nameLabel = 'StrssCncrCmprsn'
-    elif (strssType == 'ST'):
-        nameLabel = 'StrssStlTnsn'
-    elif (strssType == 'SC'):
-        nameLabel = 'StrssStlCmprsn'
-    elif (strssType == 'PRESURE'):
-        nameLabel = 'StrssMaxPreStrss'
-    elif (strssType == 'TIME0'):
-        nameLabel = 'StrssInT0'
-    elif (strssType == 'TIME0temp'):
-        nameLabel = 'StrssInT0temp'
-    elif (strssType == 'FIXED'):
-        nameLabel = 'StrssAtTime'
+    # Plot vectors
 
-    yAxisMin = int((min(min(strssFxE) ,min(strssFrL) ,min(strssFrE) ) /1 ) -1)
-    yAxisMax = int((max(max(strssFxE) ,max(strssFrL) ,max(strssFrE) ) /1 ) +1)
 
-    # >>>>> x-axis declaration <<<<<
+
+    # # >>>>> Label selection and min/max value calculation <<<<<
+    # if (strssType == 'T'):
+    #     nameLabel = 'StrssCncrTnsn'
+    # elif (strssType == 'C'):
+    #     nameLabel = 'StrssCncrCmprsn'
+    # elif (strssType == 'ST'):
+    #     nameLabel = 'StrssStlTnsn'
+    # elif (strssType == 'SC'):
+    #     nameLabel = 'StrssStlCmprsn'
+    # elif (strssType == 'PRESURE'):
+    #     nameLabel = 'StrssMaxPreStrss'
+    # elif (strssType == 'TIME0'):
+    #     nameLabel = 'StrssInT0'
+    # elif (strssType == 'TIME0temp'):
+    #     nameLabel = 'StrssInT0temp'
+    # elif (strssType == 'FIXED'):
+    #     nameLabel = 'StrssAtTime'
+
+    # y-axis declaration and limits
+    stress_fixed = results.stress_total_fixed[step_fixed]
+    stress_clamped = results.stress_total_clamped[step_clamped]
+    stress_free = results.stress_total_free[step_free]
+    y_min = int((min(min(stress_fixed) ,min(stress_clamped) ,min(stress_free) ) /1 ) - 1)
+    y_max = int((max(max(stress_fixed) ,max(stress_clamped) ,max(stress_free) ) /1 ) + 1)
+
+    # x-axis declaration and limits
+    x_axis = mesh_space.x_axis_thickness
+
+
+
     xAxisVal = xAxisThick
     xAxisMax = max(xAxisVal)
     xAxisVal1 = cropVectSteelIn(xAxisVal)
