@@ -13,8 +13,6 @@ from src.calculations.outputs.figures.plotting_controller import plot_all_figure
 from src.calculations.outputs.result_processing import process_results
 
 
-
-
 # Define the function that will be called from the GUI
 def run_analysis(gui_inputs):
     try:

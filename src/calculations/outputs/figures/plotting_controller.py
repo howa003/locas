@@ -4,6 +4,7 @@ from src.general_functions import double_print
 import os
 from src.calculations.outputs.figures.stress_evolutions import plot_stress_evolutions
 from src.calculations.outputs.figures.stress_distributions import plot_stress_distributions
+from src.calculations.outputs.figures.gif_animation import create_gif_animation
 
 
 def plot_all_figures(structure: Structure, results: Results, mesh_space: MeshSpace, mesh_time: MeshTime) -> str:
@@ -69,8 +70,9 @@ def plot_all_figures(structure: Structure, results: Results, mesh_space: MeshSpa
                            'Evolutions of minimal/maximal stresses in the structure',
                            results, mesh_time)
 
+    create_gif_animation(mesh_space, mesh_time, results)
 
-    # TODO: Plot more figures and add gif creation
+    # TODO: Plot more figures and
 
     result_message = "Figures saved successfully."
 
