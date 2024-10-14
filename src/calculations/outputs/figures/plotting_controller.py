@@ -70,7 +70,7 @@ def plot_all_figures(structure: Structure, results: Results, mesh_space: MeshSpa
                            'Evolutions of minimal/maximal stresses in the structure',
                            results, mesh_time)
 
-    create_gif_animation(mesh_space, mesh_time, results)
+    create_gif_animation(mesh_space, mesh_time, results, structure)
 
     # TODO: Plot more figures and
 
