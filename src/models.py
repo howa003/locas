@@ -201,7 +201,7 @@ class MeshTime:
         self.step_time_5 = structure.step_time_5
 
     @property
-    def time_axis(self) -> list[float]:
+    def time_axis(self) -> npt.NDArray[np.float64]:
         # Note that the time axis contains the initial time (0) and the final time (duration)
         phase_1_end = min(PHASE_ENDS_MAX[0], self.duration)
         phase_2_end = min(PHASE_ENDS_MAX[1], self.duration)
@@ -221,7 +221,7 @@ class MeshTime:
                 time += self.step_time_4
             else:
                 time += self.step_time_5
-        return time_axis
+        return np.array(time_axis)
 
     @property
     def time_steps_count(self) -> int:
@@ -297,23 +297,11 @@ class Results:
         self.pres_air_int_vect: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
         self.heat_coef_int_vect: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
         self.heat_coef_ext_vect: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
-
         self.temp_matrix: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
         self.temp_matrix_steel_inner: npt.NDArray[np.float64] = np.array([])
         self.temp_matrix_concrete: npt.NDArray[np.float64] = np.array([])
         self.temp_matrix_steel_outer: npt.NDArray[np.float64] = np.array([])
-        self.stress_fixed: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
-        self.stress_fixed_steel_inner: npt.NDArray[np.float64] = np.array([])
-        self.stress_fixed_concrete: npt.NDArray[np.float64] = np.array([])
-        self.stress_fixed_steel_outer: npt.NDArray[np.float64] = np.array([])
-        self.stress_clamped: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
-        self.stress_clamped_steel_inner: npt.NDArray[np.float64] = np.array([])
-        self.stress_clamped_concrete: npt.NDArray[np.float64] = np.array([])
-        self.stress_clamped_steel_outer: npt.NDArray[np.float64] = np.array([])
-        self.stress_free: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
-        self.stress_free_steel_inner: npt.NDArray[np.float64] = np.array([])
-        self.stress_free_concrete: npt.NDArray[np.float64] = np.array([])
-        self.stress_free_steel_outer: npt.NDArray[np.float64] = np.array([])
+        self.strains_thermal_theoretical: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
         self.stress_temp_fixed: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
         self.stress_temp_clamped: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
         self.stress_temp_free: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
@@ -321,9 +309,36 @@ class Results:
         self.strain_internal_pressure: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
         self.stress_prestressing: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
         self.strain_prestressing: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.strains_real_fixed: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
         self.stress_total_fixed: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_fixed_steel_inner: npt.NDArray[np.float64] = np.array([])
+        self.stress_fixed_concrete: npt.NDArray[np.float64] = np.array([])
+        self.stress_fixed_steel_outer: npt.NDArray[np.float64] = np.array([])
+        self.strains_real_clamped: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
         self.stress_total_clamped: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_clamped_steel_inner: npt.NDArray[np.float64] = np.array([])
+        self.stress_clamped_concrete: npt.NDArray[np.float64] = np.array([])
+        self.stress_clamped_steel_outer: npt.NDArray[np.float64] = np.array([])
+        self.strains_real_free: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
         self.stress_total_free: npt.NDArray[np.float64] = np.zeros((mesh_time.time_steps_count + 1, mesh_space.node_count), dtype=float)
+        self.stress_free_steel_inner: npt.NDArray[np.float64] = np.array([])
+        self.stress_free_concrete: npt.NDArray[np.float64] = np.array([])
+        self.stress_free_steel_outer: npt.NDArray[np.float64] = np.array([])
+        self.stress_evolution_concrete_tension_fixed: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
+        self.stress_evolution_concrete_tension_clamped: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
+        self.stress_evolution_concrete_tension_free: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
+        self.stress_evolution_steel_tension_fixed: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
+        self.stress_evolution_steel_tension_clamped: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
+        self.stress_evolution_steel_tension_free: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
+        self.stress_evolution_concrete_compression_fixed: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
+        self.stress_evolution_concrete_compression_clamped: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
+        self.stress_evolution_concrete_compression_free: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
+        self.stress_evolution_steel_compression_fixed: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
+        self.stress_evolution_steel_compression_clamped: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
+        self.stress_evolution_steel_compression_free: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
+        self.stress_evolution_steel_merged_fixed: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
+        self.stress_evolution_steel_merged_clamped: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
+        self.stress_evolution_steel_merged_free: npt.NDArray[np.float64] = np.zeros(mesh_time.time_steps_count + 1, dtype=float)
         self.extreme_steps: dict[str, int] = {
             'max_internal_pressure': 0,
             'max_temp_air': 0,

@@ -16,7 +16,8 @@ def calc_thermal_stresses(
         mat_stress_clamped = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
         mat_stress_free = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
 
-        mat_strain_fixed = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
+        mat_strain_theor = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
+        # mat_strain_fixed = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
         mat_strain_clamped = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
         mat_strain_free = np.zeros((int(mesh_time.time_steps_count + 1), int(mesh_space.node_count)))
 
@@ -40,6 +41,8 @@ def calc_thermal_stresses(
                 theor_strains_list[j] = theor_strain
                 fixed_stress = - calc_stress_from_strain(theor_strain, j, mesh_space, structure)
                 fixed_stresses_list[j] = fixed_stress
+
+            mat_strain_theor[current_step] = theor_strains_list
 
             # print(current_step)
             # print(fixed_stresses_list)
@@ -83,6 +86,9 @@ def calc_thermal_stresses(
                 stresses_clamped_list[j] = calc_stress_from_strain(strain_prev_clamped, j, mesh_space, structure)
                 stresses_free_list[j] = calc_stress_from_strain(strain_prev_free, j, mesh_space, structure)
 
+            mat_strain_free[current_step] = strain_real_free
+            mat_strain_clamped[current_step] = strain_real_clamped
+
             mat_stress_fixed[current_step] = (1 / (1 - poisson)) * fixed_stresses_list
             mat_stress_clamped[current_step] = (1 / (1 - poisson)) * stresses_clamped_list
             mat_stress_free[current_step] = (1 / (1 - poisson)) * stresses_free_list
@@ -90,6 +96,10 @@ def calc_thermal_stresses(
         results.stress_temp_fixed = mat_stress_fixed
         results.stress_temp_clamped = mat_stress_clamped
         results.stress_temp_free = mat_stress_free
+
+        results.strains_thermal_theoretical = mat_strain_theor
+        results.strains_real_clamped = mat_strain_clamped
+        results.strains_real_free = mat_strain_free
 
         # print(results.stress_temp_fixed[-1])
         # print(results.stress_temp_clamped[-1])

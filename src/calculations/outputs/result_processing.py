@@ -18,6 +18,28 @@ def row_with_min_value(matrix: npt.NDArray[np.float64]) -> int:
     return np.argmin(np.amin(matrix, axis=1))
 
 
+def merge_tensile_and_compressive_stresses(
+        stresses_tensile: npt.NDArray[np.float64],
+        stresses_compressive: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+    """
+    This function merges the compressive and tensile stresses into one array.
+    If the maximal tensile stress is positive, the tensile stresses are taken.
+    Otherwise, the compressive stresses are taken.
+
+    :param stresses_tensile: The tensile stresses.
+    :type stresses_tensile: numpy array
+    :param stresses_compressive: The compressive stresses.
+    :type stresses_compressive: numpy array
+    :return: The merged stresses.
+    :rtype: numpy array
+    """
+    stresses_merged = np.copy(stresses_tensile)
+    for i in range(len(stresses_merged)):
+        if stresses_merged[i] < 0:
+            stresses_merged[i] = stresses_compressive[i]
+    return stresses_merged
+
+
 def create_submatrices(structure: Structure, mesh_space: MeshSpace, results: Results) -> None:
 
     # Split the temperature matrix into matrices for steel and concrete
@@ -85,6 +107,42 @@ def find_extreme_steps(results: Results) -> None:
     return None
 
 
+def create_stress_evolutions(results: Results) -> None:
+    """
+    This function creates arrays with evolutions of minimal and maximal stresses for steel and concrete.
+
+    :param results: A handle to the :class:`models.Results` object containing the results.
+    :type results: class:`Results`
+    """
+
+    # Evolution of maximal stress (maximal tension) in concrete
+    results.stress_evolution_concrete_tension_fixed = np.amax(results.stress_fixed_concrete, axis=1)
+    results.stress_evolution_concrete_tension_clamped = np.amax(results.stress_clamped_concrete, axis=1)
+    results.stress_evolution_concrete_tension_free = np.amax(results.stress_free_concrete, axis=1)
+
+    # Evolution of minimal stress (maximal compression) in concrete
+    results.stress_evolution_concrete_compression_fixed = np.amin(results.stress_fixed_concrete, axis=1)
+    results.stress_evolution_concrete_compression_clamped = np.amin(results.stress_clamped_concrete, axis=1)
+    results.stress_evolution_concrete_compression_free = np.amin(results.stress_free_concrete, axis=1)
+
+    # Evolution of maximal stress (maximal tension) in steel
+    results.stress_evolution_steel_tension_fixed = np.amax(results.stress_fixed_steel_inner, axis=1)
+    results.stress_evolution_steel_tension_clamped = np.amax(results.stress_clamped_steel_inner, axis=1)
+    results.stress_evolution_steel_tension_free = np.amax(results.stress_free_steel_inner, axis=1)
+
+    # Evolution of minimal stress (maximal compression) in steel
+    results.stress_evolution_steel_compression_fixed = np.amin(results.stress_fixed_steel_inner, axis=1)
+    results.stress_evolution_steel_compression_clamped = np.amin(results.stress_clamped_steel_inner, axis=1)
+    results.stress_evolution_steel_compression_free = np.amin(results.stress_free_steel_inner, axis=1)
+
+    # Evolution of extreme stress in steel
+    results.stress_evolution_steel_merged_fixed = merge_tensile_and_compressive_stresses(results.stress_evolution_steel_tension_fixed, results.stress_evolution_steel_compression_fixed)
+    results.stress_evolution_steel_merged_clamped = merge_tensile_and_compressive_stresses(results.stress_evolution_steel_tension_clamped, results.stress_evolution_steel_compression_clamped)
+    results.stress_evolution_steel_merged_free = merge_tensile_and_compressive_stresses(results.stress_evolution_steel_tension_free, results.stress_evolution_steel_compression_free)
+
+    return None
+
+
 def process_results(structure: Structure, mesh_space: MeshSpace, results: Results) -> str:
     """
     This function processes the results of the analysis.
@@ -95,6 +153,9 @@ def process_results(structure: Structure, mesh_space: MeshSpace, results: Result
 
         # Find the steps with extreme values
         find_extreme_steps(results)
+
+        # Create arrays with evolutions of minimal and maximal stresses for steel and concrete
+        create_stress_evolutions(results)
 
         result_message = "Results processes successfully."
 

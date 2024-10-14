@@ -1,7 +1,5 @@
 from src.models import Structure, MeshSpace, MeshTime, Results, Loads
 from src.calculations.temperatures.steadystate_heat_transfer import calc_operating_temperatures
-import eel
-from src.general_functions import get_timestamp
 from src.calculations.temperatures.surface_heat_transfer_coefficient import calc_surface_resistance
 import numpy as np
 from src.calculations.temperatures.transient_heat_transfer import transient_heat_transfer
@@ -11,10 +9,8 @@ from src.calculations.stresses.internal_pressure_stresses import calculate_press
 from src.calculations.stresses.prestressing_stresses import calc_circumferential_stress
 from src.calculations.stresses.total_stresses import sum_all_stresses
 from src.calculations.outputs.data_files import save_results_into_csv
-from src.calculations.outputs.static_figures import plot_all_figures
+from src.calculations.outputs.figures.plotting_controller import plot_all_figures
 from src.calculations.outputs.result_processing import process_results
-
-
 
 
 # Define the function that will be called from the GUI

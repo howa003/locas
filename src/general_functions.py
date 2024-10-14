@@ -14,3 +14,6 @@ def double_print(message: str) -> None:
 def num_to_str_1_dec(number: float) -> str:
     return str(round(number, 1))
 
+
+def num_to_str_4_dec(number: float) -> str:
+    return str(round(number, 4))
