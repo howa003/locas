@@ -1,4 +1,4 @@
-# LOCAS - Loss-of-coolant stresses
+# LOCAS - Loss-of-coolant-accident stresses
 
 LOCAS is a software application for the calculation of stresses induced in cylindrical containment vessels create using Python.
 Using this software, the user can calculate the stresses induced by temperature, internal pressure, and prestressing.
